@@ -60,12 +60,17 @@ h3 { font-size: 1.15rem; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 20px var(--gutter);
 }
-.topbar.scrolled {
-  padding-top: 12px; padding-bottom: 12px;
+.topbar.scrolled { padding-top: 12px; padding-bottom: 12px; }
+/* The frosted bar lives on its own layer: a blur on .topbar itself would trap
+   the full-screen mobile menu (a fixed child) inside the bar's box */
+.topbar::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
   background: color-mix(in oklab, var(--suede) 82%, transparent);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 1px 0 var(--line), 0 10px 30px var(--glow-faint);
+  opacity: 0; transition: opacity .3s;
 }
+.topbar.scrolled::before { opacity: 1; }
 .menu-btn { display: none; }
 .brand { display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; font-family: var(--display); font-size: 1.3rem; text-decoration: none; letter-spacing: 0.04em; }
 .topbar nav { display: flex; gap: clamp(14px, 2.8vw, 34px); align-items: center; font-size: 1.15rem; font-weight: 500; }
@@ -426,7 +431,17 @@ form.book-form :is(input, select, textarea)[aria-invalid="true"] { border-color:
   .swatches { justify-content: space-between; }
   .swatch { width: 40px; height: 40px; }
 
-  .work, .gallery, .reviews, .ninja, .meets, .book { padding-top: 72px; }
+  /* Each section is its own band: a glowing rule on top, and every other band tinted */
+  .work, .gallery, .reviews, .ninja, .meets, .book {
+    padding-top: 56px; padding-bottom: 56px;
+    background: linear-gradient(90deg, transparent, var(--glow) 50%, transparent) top / 100% 1px no-repeat;
+  }
+  .work, .reviews, .meets {
+    background:
+      linear-gradient(90deg, transparent, var(--glow) 50%, transparent) top / 100% 1px no-repeat,
+      color-mix(in oklab, var(--glow) 7%, var(--suede-2));
+  }
+  .ninja::before { inset: 0; }
   .ninja-photo { max-width: none; margin-bottom: 24px; }
   .ninja-stats { gap: 28px; }
   .service { padding: 26px 0; gap: 12px; }
