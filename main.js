@@ -17,7 +17,15 @@
 
   // Solid top bar once the page scrolls past the hero top
   const topbar = document.querySelector(".topbar");
-  const onScroll = () => topbar.classList.toggle("scrolled", scrollY > 40);
+  const toTop = document.getElementById("to-top");
+  const onScroll = () => {
+    topbar.classList.toggle("scrolled", scrollY > 40);
+    toTop.classList.toggle("show", scrollY > innerHeight * 0.8);
+  };
+  toTop.addEventListener("click", () => {
+    scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    document.querySelector(".brand").focus({ preventScroll: true });
+  });
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
