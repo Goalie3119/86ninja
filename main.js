@@ -524,6 +524,12 @@
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
+      // FormSubmit answers the very first request with an activation notice instead of sending it
+      if (/activat/i.test(data.message || "")) {
+        status.textContent = "This form isn't switched on yet. Check the booking inbox for an email from FormSubmit, click Activate Form, then send your request again.";
+        status.className = "form-status error";
+        return;
+      }
       if (!res.ok || String(data.success) !== "true") throw new Error(data.message || res.status);
       status.textContent = "Request sent. I'll get back to you within a day.";
       status.className = "form-status sent";
