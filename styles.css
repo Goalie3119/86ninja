@@ -73,14 +73,19 @@ h3 { font-size: 1.15rem; }
 .topbar nav a:hover { color: var(--glow); }
 .topbar nav .nav-cta { color: var(--star); border-bottom: 2px solid var(--glow); padding-bottom: 2px; }
 
-/* Hanko-style seal with 忍 (shinobi, "ninja") */
-.seal {
-  display: inline-grid; place-items: center; width: 1.9em; height: 1.9em; border-radius: 6px;
-  background: var(--glow); color: var(--suede);
-  font: 800 1.15em/1 "Shippori Mincho B1", serif;
-  box-shadow: 0 0 18px var(--glow-soft);
-  transform: rotate(-4deg);
+/* Logo mark: two crossed katanas, handles in the chosen color */
+.logo-katana {
+  position: relative; display: inline-block; width: 2.3em; height: 2.3em; flex: none;
+  filter: drop-shadow(0 0 6px var(--glow-soft));
 }
+.logo-katana::before, .logo-katana::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 3.1em; height: .48em;
+  transform: translate(-50%, -50%) rotate(-42deg);
+  background: var(--katana-fill);
+  -webkit-mask: var(--katana) no-repeat center / contain; mask: var(--katana) no-repeat center / contain;
+}
+/* Mirror the second blade so its handle sits bottom-right */
+.logo-katana::after { transform: translate(-50%, -50%) scaleX(-1) rotate(-42deg); }
 
 /* Hero — the headliner */
 .hero {
