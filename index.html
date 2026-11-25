@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Afterglow Customs</title>
+  <meta name="description" content="Starlight Headliners, Under Glow and Ambient Interior lighting, installed by hand. Plus the local car meet calendar.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@800&text=%E5%BF%8D&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <a class="brand" href="#top"><span class="seal" aria-hidden="true">忍</span>Afterglow</a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="main-nav">
+      <span class="menu-icon" aria-hidden="true"></span>
+      <span class="menu-text">Menu</span>
+    </button>
+    <nav aria-label="Main" id="main-nav">
+      <a href="#work">Installs</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#ninja">The Ninja</a>
+      <a href="#meets">Meets</a>
+      <a class="nav-cta" href="#book">Book a Build</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero: the headliner. Stars are drawn on the canvas; the controller recolors the whole page. -->
+    <section class="hero" id="top">
+      <canvas class="sky" aria-hidden="true"></canvas>
+      <div class="hero-inner">
+        <h1>Your car, after dark.</h1>
+        <p class="lede">Starlight Headliners, Under Glow and Ambient Interior lighting, wired clean and installed by hand in Tampa by 86ninja.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#book">Book a Build</a>
+          <a class="btn btn-ghost" href="#meets">See Upcoming Meets</a>
+        </div>
+      </div>
+
+      <div class="remote" role="group" aria-labelledby="remote-label">
+        <p id="remote-label" class="remote-label">Pick a Color — the Page Follows It</p>
+        <div class="swatches">
+          <button class="swatch" data-glow="#8f7bff" aria-label="Violet" aria-pressed="true"></button>
+          <button class="swatch" data-glow="#5fd4ff" aria-label="Ice blue" aria-pressed="false"></button>
+          <button class="swatch" data-glow="#ff4fb3" aria-label="Magenta" aria-pressed="false"></button>
+          <button class="swatch" data-glow="#ffb347" aria-label="Amber" aria-pressed="false"></button>
+          <button class="swatch" data-glow="#3ef0b0" aria-label="Mint" aria-pressed="false"></button>
+        </div>
+        <label class="twinkle-toggle">
+          <input type="checkbox" id="twinkle" checked>
+          Twinkle
+        </label>
+      </div>
+
+      <div class="ground" aria-hidden="true"></div>
+    </section>
+
+    <section class="work" id="work" aria-labelledby="work-title">
+      <h2 id="work-title">What I Install</h2>
+
+      <article class="service">
+        <h3>Starlight Headliner</h3>
+        <p>Hundreds of fiber-optic strands hand-placed through the headliner, driven by an RGB light engine with twinkle and shooting-star modes. Phone or remote control.</p>
+        <dl class="tiers">
+          <div><dt>500 stars</dt><dd>$400</dd></div>
+          <div><dt>750 stars</dt><dd>$500</dd></div>
+          <div><dt>1,000 stars</dt><dd>$600</dd></div>
+        </dl>
+      </article>
+
+      <article class="service">
+        <h3>Under Glow</h3>
+        <p>Sealed, chasing-capable LED strips mounted to the underbody and wheel wells, with fused wiring and app or remote control.</p>
+        <p class="quote"><a href="#book">Priced per car — request a quote</a></p>
+      </article>
+
+      <article class="service">
+        <h3>Ambient Interior</h3>
+        <p>Light lines tucked into the dash, doors and footwells that match your headliner or react to music. Factory-looking trim, no visible wires.</p>
+        <p class="quote"><a href="#book">Priced per car — request a quote</a></p>
+      </article>
+    </section>
+
+    <section class="gallery" id="gallery" aria-labelledby="gallery-title">
+      <div class="section-head">
+        <h2 id="gallery-title">Recent Builds</h2>
+        <p>More install videos on <a href="https://www.tiktok.com/@86ninja_" rel="noopener">TikTok</a>.</p>
+      </div>
+      <!-- Filled from images/gallery/ by main.js. Drop photos in that folder to add them. -->
+      <div class="carousel" id="carousel" hidden role="region" aria-roledescription="carousel" aria-label="Build photos">
+        <div class="carousel-track" id="carousel-track" tabindex="0"></div>
+        <button class="carousel-btn prev" id="carousel-prev" type="button" aria-label="Previous photo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+        </button>
+        <button class="carousel-btn next" id="carousel-next" type="button" aria-label="Next photo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+        <p class="carousel-count" id="carousel-count" aria-live="polite"></p>
+      </div>
+      <!-- Shown only until real photos are added -->
+      <p class="swipe-hint" id="gallery-hint" aria-hidden="true">Swipe to see more builds</p>
+      <div class="grid" id="gallery-placeholder">
+        <figure class="shot tall"><div class="ph ph-stars"></div><figcaption>2021 Civic Si — 1,000-star headliner with shooting stars</figcaption></figure>
+        <figure class="shot"><div class="ph ph-under"></div><figcaption>WRX — 6-zone Under Glow</figcaption></figure>
+        <figure class="shot"><div class="ph ph-amb"></div><figcaption>Model 3 — dash and door ambient lines</figcaption></figure>
+        <figure class="shot wide"><div class="ph ph-under alt"></div><figcaption>Mustang GT at the October night meet</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="reviews" id="reviews" aria-labelledby="reviews-title">
+      <div class="section-head">
+        <h2 id="reviews-title">What Customers Say</h2>
+        <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span> 5.0 from 40+ installs</p>
+      </div>
+      <p class="swipe-hint" aria-hidden="true">Swipe to read more</p>
+      <div class="review-grid">
+        <blockquote class="review featured">
+          <p>I sat in the back seat for ten minutes just looking up. The headliner looks better than the ones I've seen in Rolls-Royces on YouTube, and there's not a single loose strand.</p>
+          <footer><span class="stars" aria-label="5 out of 5">★★★★★</span><cite>Jordan M.</cite><span class="car">2022 GR86, 1,000 stars</span></footer>
+        </blockquote>
+        <blockquote class="review">
+          <p>Clean install, no loose wires anywhere, and the colors pop at night. Exactly what I wanted.</p>
+          <footer><span class="stars" aria-label="5 out of 5">★★★★★</span><cite>Alexis R.</cite><span class="car">WRX, Under Glow</span></footer>
+        </blockquote>
+        <blockquote class="review">
+          <p>Booked a week before a meet and he made it happen. Got stopped by people all night.</p>
+          <footer><span class="stars" aria-label="5 out of 5">★★★★★</span><cite>Chris D.</cite><span class="car">Civic Si, 750 stars</span></footer>
+        </blockquote>
+        <blockquote class="review">
+          <p>The ambient lines look factory. My passengers thought the car came like that.</p>
+          <footer><span class="stars" aria-label="5 out of 5">★★★★★</span><cite>Sam T.</cite><span class="car">Model 3, Ambient Interior</span></footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="ninja" id="ninja" aria-labelledby="ninja-title">
+      <figure class="ninja-photo">
+        <img src="images/86ninja.jpg" width="1080" height="1080" loading="lazy"
+             alt="86ninja in a white ninja outfit and straw hat, holding a katana in front of his white GR86 with a blue dragon wrap">
+      </figure>
+      <div class="ninja-copy">
+        <h2 id="ninja-title">Meet the Ninja</h2>
+        <p>I'm 86ninja. I started by lighting up my own '25 GR86, the white one with the blue dragon wrap, and now I do the same for cars all over Tampa.</p>
+        <p>Every new kit gets unboxed with the katana, and every finished build ends with a happy client.</p>
+        <ul class="ninja-stats">
+          <li><strong>15.7K</strong>followers</li>
+          <li><strong>1.7M</strong>likes</li>
+        </ul>
+        <p class="code-callout">Use code <strong>NINJA</strong> for 10% off at @86squad</p>
+        <div><a class="btn btn-ghost" href="https://www.tiktok.com/@86ninja_" rel="noopener">Watch on TikTok</a></div>
+      </div>
+    </section>
+
+    <section class="meets" id="meets" aria-labelledby="meets-title">
+      <div class="section-head">
+        <h2 id="meets-title">Car Meets</h2>
+        <p>Where I'll be, and what went down last time. Come say hi.</p>
+      </div>
+      <div class="meet-tabs" role="tablist" aria-label="Meets">
+        <button role="tab" id="tab-upcoming" aria-selected="true" aria-controls="meet-list">Upcoming</button>
+        <button role="tab" id="tab-past" aria-selected="false" aria-controls="meet-list">Past Recaps</button>
+      </div>
+      <ol class="meet-list" id="meet-list" role="tabpanel" aria-labelledby="tab-upcoming"></ol>
+    </section>
+
+    <section class="book" id="book" aria-labelledby="book-title">
+      <div class="book-copy">
+        <h2 id="book-title">Book a Build</h2>
+        <p>Tell me about the car and what you're after. I'll reply within a day with a quote and open dates.</p>
+        <p class="contact-line">Or message me on TikTok <a href="https://www.tiktok.com/@86ninja_" rel="noopener">@86ninja_</a></p>
+      </div>
+      <form class="book-form" id="book-form" novalidate>
+        <label>Your Name
+          <input name="name" id="f-name" autocomplete="name" required aria-describedby="err-name">
+          <span class="field-error" id="err-name"></span>
+        </label>
+        <label>Email or Phone Number
+          <input name="contact" id="f-contact" autocomplete="email" required aria-describedby="err-contact" placeholder="you@email.com or (813) 555-0123">
+          <span class="field-error" id="err-contact"></span>
+        </label>
+        <fieldset class="vehicle">
+          <legend>Your Car</legend>
+          <div class="vehicle-row">
+            <label>Year
+              <select name="year" id="car-year" required>
+                <option value="">Select Year</option>
+              </select>
+            </label>
+            <label>Make
+              <select name="make" id="car-make" required disabled>
+                <option value="">Select Year First</option>
+              </select>
+            </label>
+            <label>Model
+              <select name="model" id="car-model" required disabled>
+                <option value="">Select Make First</option>
+              </select>
+            </label>
+          </div>
+          <label class="other-field" id="make-other-wrap" hidden>Type the Make
+            <input name="make_other" id="car-make-other">
+          </label>
+          <label class="other-field" id="model-other-wrap" hidden>Type the Model
+            <input name="model_other" id="car-model-other">
+          </label>
+          <span class="field-error" id="err-car"></span>
+        </fieldset>
+        <fieldset class="services" aria-describedby="err-services">
+          <legend>What Are You Interested In?</legend>
+          <label class="check"><input type="checkbox" name="service" value="Starlight Headliner"> Starlight Headliner</label>
+          <label class="check"><input type="checkbox" name="service" value="Under Glow"> Under Glow</label>
+          <label class="check"><input type="checkbox" name="service" value="Ambient Interior"> Ambient Interior</label>
+          <span class="field-error" id="err-services"></span>
+        </fieldset>
+        <label>Anything Else?
+          <textarea name="notes" rows="4" placeholder="Colors, inspiration, deadline for a meet…"></textarea>
+        </label>
+        <!-- Spam trap: hidden from people, bots fill it in -->
+        <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="btn" type="submit">Send Request</button>
+        <p class="form-status" id="form-status" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Afterglow Customs. Lighting installs by appointment. <a href="https://www.tiktok.com/@86ninja_" rel="noopener">TikTok @86ninja_</a></p>
+    <p>Based in Tampa, Florida. Serving the Tampa Bay area.</p>
+  </footer>
+
+  <script src="meets.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
