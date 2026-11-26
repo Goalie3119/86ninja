@@ -1,17 +1,17 @@
 :root {
-  --suede: #15122b;      /* headliner fabric */
-  --suede-2: #1e1a3b;
-  --suede-3: #2a2550;
-  --star: #f3eedf;       /* warm fiber white */
-  --muted: #aba5cc;
-  --glow: #8f7bff;       /* set by the color remote */
+  --suede: #000000;      /* the floor: pure black */
+  --suede-2: #06070b;
+  --suede-3: #141722;
+  --star: #eef8ff;       /* neon-tube white */
+  --muted: #8d97ab;
+  --glow: #00e5ff;       /* set by the color remote */
   --glow-soft: color-mix(in oklab, var(--glow) 22%, transparent);
   --glow-faint: color-mix(in oklab, var(--glow) 9%, transparent);
   --line: color-mix(in oklab, var(--glow) 35%, var(--suede-3));
   --surface: color-mix(in oklab, var(--glow) 8%, var(--suede-2));
 
   --katana: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20160%2012%27%3E%3Cpath%20fill-rule%3D%27evenodd%27%20d%3D%27M1%204.2%20Q1%203.4%202%203.4%20H38%20V8.6%20H2%20Q1%208.6%201%207.8%20Z%20M5%206%20L8%204.4%20L11%206%20L8%207.6%20Z%20M13%206%20L16%204.4%20L19%206%20L16%207.6%20Z%20M21%206%20L24%204.4%20L27%206%20L24%207.6%20Z%20M29%206%20L32%204.4%20L35%206%20L32%207.6%20Z%27/%3E%3Cellipse%20cx%3D%2741%27%20cy%3D%276%27%20rx%3D%272.4%27%20ry%3D%275.6%27/%3E%3Crect%20x%3D%2743%27%20y%3D%274%27%20width%3D%274.5%27%20height%3D%274%27%20rx%3D%27.6%27/%3E%3Cpath%20d%3D%27M47%204.3%20Q100%203.6%20159%200.8%20Q153%205.6%20147%206.6%20Q100%207.8%2047%207.7%20Z%27/%3E%3C/svg%3E");
-  --shippo: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%271%27%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%2720%27/%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%270%27%20r%3D%2720%27/%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2740%27%20r%3D%2720%27/%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%2720%27/%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2720%27%20r%3D%2720%27/%3E%3C/svg%3E");
+  --grid: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%271%27%3E%3Cpath%20d%3D%27M0%20.5%20H40%20M.5%200%20V40%27/%3E%3C/svg%3E");
   --katana-fill: linear-gradient(90deg, var(--glow) 0 24.5%, var(--muted) 24.5% 29.5%, var(--star) 29.5%);
 
   --display: "Michroma", system-ui, sans-serif;
@@ -29,6 +29,8 @@ body {
   background:
     radial-gradient(70% 50% at 100% 30%, var(--glow-faint), transparent 70%),
     radial-gradient(60% 40% at 0% 75%, var(--glow-faint), transparent 70%),
+    linear-gradient(color-mix(in oklab, var(--glow) 7%, transparent) 1px, transparent 1px) 0 0 / 56px 56px,
+    linear-gradient(90deg, color-mix(in oklab, var(--glow) 7%, transparent) 1px, transparent 1px) 0 0 / 56px 56px,
     var(--suede);
   background-attachment: fixed;
   color: var(--star);
@@ -38,7 +40,10 @@ body {
 img { max-width: 100%; display: block; }
 a { color: inherit; }
 h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.15; margin: 0; }
-h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); letter-spacing: 0.01em; text-shadow: 0 0 28px var(--glow-soft); }
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem); letter-spacing: 0.01em; color: #fff;
+  text-shadow: 0 0 2px #fff, 0 0 8px var(--glow), 0 0 22px var(--glow-soft);
+}
 /* Section headings get a small katana in place of an underline: glow-colored handle, white blade */
 main section > h2::after, .section-head h2::after, .book-copy h2::after, .ninja-copy h2::after {
   content: ""; display: block; width: 132px; height: 10px; margin-top: 16px;
@@ -72,7 +77,7 @@ h3 { font-size: 1.15rem; }
 }
 .topbar.scrolled::before { opacity: 1; }
 .menu-btn { display: none; }
-.brand { display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; font-family: var(--display); font-size: 1.3rem; text-decoration: none; letter-spacing: 0.04em; }
+.brand { text-shadow: 0 0 8px var(--glow-soft); display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; font-family: var(--display); font-size: 1.3rem; text-decoration: none; letter-spacing: 0.04em; }
 .topbar nav { display: flex; gap: clamp(14px, 2.8vw, 34px); align-items: center; font-size: 1.15rem; font-weight: 500; }
 .topbar nav a { text-decoration: none; color: var(--muted); }
 .topbar nav a:hover { color: var(--glow); }
@@ -99,14 +104,21 @@ h3 { font-size: 1.15rem; }
   display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 32px;
   padding: 120px var(--gutter) 140px;
   background:
-    radial-gradient(120% 80% at 50% -10%, var(--suede-3), var(--suede) 70%);
+    var(--suede);
 }
-.sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+.arena { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero-inner { position: relative; max-width: 40rem; }
+/* Dark pool behind the hero text so passing light trails don't fight it */
+.hero-inner::before {
+  content: ""; position: absolute; inset: -60px -80px; z-index: -1;
+  background: radial-gradient(closest-side, rgb(0 0 0 / .78), rgb(0 0 0 / .45) 60%, transparent);
+}
 .hero h1 {
   font-size: clamp(2.4rem, 7vw, 5.5rem);
   letter-spacing: -0.01em;
-  text-shadow: 0 0 40px var(--glow-soft);
+  color: #fff;
+  /* Neon tube: white core, colored glow in layers */
+  text-shadow: 0 0 2px #fff, 0 0 10px var(--glow), 0 0 26px var(--glow), 0 0 60px var(--glow-soft);
 }
 .lede { color: var(--muted); font-size: clamp(1.05rem, 1.6vw, 1.25rem); max-width: 34rem; margin: 20px 0 32px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -116,12 +128,12 @@ h3 { font-size: 1.15rem; }
   font: 600 1rem/1 var(--body);
   padding: 15px 24px; border-radius: 999px; border: 0;
   background: var(--glow); color: var(--suede); text-decoration: none;
-  box-shadow: 0 0 0 0 var(--glow-soft), 0 8px 30px var(--glow-soft);
+  box-shadow: 0 0 12px var(--glow), 0 0 36px var(--glow-soft);
   transition: background-color .4s, box-shadow .4s;
 }
-.btn:hover { box-shadow: 0 0 0 6px var(--glow-soft), 0 8px 30px var(--glow-soft); }
-.btn-ghost { background: transparent; color: var(--star); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--star) 35%, transparent); }
-.btn-ghost:hover { box-shadow: inset 0 0 0 1px var(--star); }
+.btn:hover { box-shadow: 0 0 0 4px var(--glow-soft), 0 0 18px var(--glow), 0 0 48px var(--glow-soft); }
+.btn-ghost { background: transparent; color: var(--star); box-shadow: inset 0 0 0 1px var(--glow), 0 0 14px var(--glow-faint); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1px var(--glow), 0 0 0 3px var(--glow-faint), 0 0 22px var(--glow-soft); }
 
 /* The remote: echoes the little RGB controller these kits ship with */
 .remote {
@@ -140,8 +152,8 @@ h3 { font-size: 1.15rem; }
   transition: transform .2s, border-color .2s;
 }
 .swatch[aria-pressed="true"] { border-color: var(--star); transform: scale(1.12); }
-.twinkle-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
-.twinkle-toggle input { accent-color: var(--glow); }
+.motion-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+.motion-toggle input { accent-color: var(--glow); }
 
 /* Underglow spilling onto the pavement */
 .ground {
@@ -168,7 +180,7 @@ h3 { font-size: 1.15rem; }
   border-top: 1px solid var(--line);
 }
 .service:last-child { border-bottom: 1px solid var(--line); }
-.service h3 { padding-top: 4px; color: var(--glow); }
+.service h3 { padding-top: 4px; color: var(--glow); text-shadow: 0 0 12px var(--glow-soft); }
 .service p { margin: 0; color: var(--muted); max-width: 34rem; }
 .service dl { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 28px; margin: 0; }
 .service dl div { display: contents; }
@@ -295,10 +307,10 @@ h3 { font-size: 1.15rem; }
   display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; align-items: center;
 }
 .ninja::before {
-  /* Shippo pattern, a nod to the cloud-and-dragon wrap on the GR86 */
+  /* Neon floor grid */
   content: ""; position: absolute; inset: 40px -10vw -40px; z-index: -1;
   background: var(--glow); opacity: .07;
-  -webkit-mask: var(--shippo) 0 0 / 56px 56px; mask: var(--shippo) 0 0 / 56px 56px;
+  -webkit-mask: var(--grid) 0 0 / 56px 56px; mask: var(--grid) 0 0 / 56px 56px;
   -webkit-mask-composite: source-in;
 }
 .ninja-photo { margin: 0; width: 100%; max-width: 460px; justify-self: center; position: relative; }
@@ -317,6 +329,12 @@ h3 { font-size: 1.15rem; }
   background: var(--surface); border: 1px dashed var(--glow); color: var(--star) !important;
 }
 .code-callout strong { font-family: var(--display); font-weight: 400; letter-spacing: .06em; color: var(--glow); }
+
+/* Neon edges on panels and cards */
+.remote, .review, .slide, .shot, .code-callout, .book-form fieldset.vehicle, .book-form fieldset.services {
+  box-shadow: inset 0 0 0 1px var(--line), 0 0 18px var(--glow-faint), inset 0 0 18px var(--glow-faint);
+}
+.review.featured { box-shadow: inset 0 0 0 1px var(--glow), 0 0 30px var(--glow-soft), inset 0 0 24px var(--glow-faint); }
 
 /* Booking */
 .vehicle-row { display: grid; grid-template-columns: 0.8fr 1fr 1.2fr; gap: 12px; }
@@ -403,7 +421,7 @@ body.menu-open .to-top { opacity: 0; visibility: hidden; }
 .foot p { margin: 0; }
 .foot::before {
   content: ""; position: absolute; inset: 0; z-index: -1; background: var(--glow); opacity: .06;
-  -webkit-mask: var(--shippo) 0 0 / 40px 40px; mask: var(--shippo) 0 0 / 40px 40px;
+  -webkit-mask: var(--grid) 0 0 / 40px 40px; mask: var(--grid) 0 0 / 40px 40px;
 }
 
 /* Responsive */

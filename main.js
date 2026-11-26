@@ -31,13 +31,13 @@
 
   // ---------- Color remote ----------
   const swatches = document.querySelectorAll(".swatch");
-  let glow = "#8f7bff";
+  let glow = "#00e5ff";
 
   function setGlow(color) {
     glow = color;
     root.style.setProperty("--glow", color);
     swatches.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.glow === color)));
-    try { localStorage.setItem("afterglow-color", color); } catch {}
+    try { localStorage.setItem("dojoglow-color", color); } catch {}
   }
 
   swatches.forEach((s) => {
@@ -46,124 +46,266 @@
   });
 
   try {
-    const saved = localStorage.getItem("afterglow-color");
+    const saved = localStorage.getItem("dojoglow-color");
     if (saved && [...swatches].some((s) => s.dataset.glow === saved)) setGlow(saved);
   } catch {}
 
-  // ---------- Starlight headliner ----------
-  const canvas = document.querySelector(".sky");
+  // ---------- Light-cycle race ----------
+  // Top-down arena: riders move on a grid, leave trails that fade out, steer away from walls and
+  // trails, sometimes try to cut each other off, crash when boxed in, then respawn.
+  const canvas = document.querySelector(".arena");
   const ctx = canvas.getContext("2d");
-  const twinkleBox = document.getElementById("twinkle");
-  let stars = [];
-  let w = 0, h = 0, dpr = 1;
+  const motionBox = document.getElementById("motion");
+  const NEON = ["#00e5ff", "#ff8a00", "#ff2bd6", "#39ff14", "#fff200", "#ff3b5c", "#9d7bff", "#f4fbff"];
+  const TRAIL_LIFE = 5200;   // ms a trail stays on the floor
+  const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+  let w = 0, h = 0, dpr = 1, cell = 14, cols = 0, rows = 0;
+  let laid;                  // per cell: time a trail was laid there (0 = empty)
+  let riders = [], sparks = [];
+  let gridLayer = document.createElement("canvas");
+  let gridColor = "";
+  let simTime = 0;
+
+  const idx = (x, y) => y * cols + x;
+  const inside = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows;
+  const blocked = (x, y) => !inside(x, y) || (laid[idx(x, y)] && simTime - laid[idx(x, y)] < TRAIL_LIFE);
+
+  // How much open floor is reachable from a cell (capped), so riders avoid dead ends
+  function room(x, y, limit) {
+    if (blocked(x, y)) return 0;
+    const seen = new Set([idx(x, y)]);
+    const queue = [[x, y]];
+    while (queue.length && seen.size < limit) {
+      const [cx, cy] = queue.shift();
+      for (const [dx, dy] of DIRS) {
+        const nx = cx + dx, ny = cy + dy, k = idx(nx, ny);
+        if (inside(nx, ny) && !seen.has(k) && !blocked(nx, ny)) { seen.add(k); queue.push([nx, ny]); }
+      }
+    }
+    return seen.size;
+  }
+
+  function spawn(r) {
+    for (let tries = 0; tries < 60; tries++) {
+      const x = 2 + Math.floor(Math.random() * (cols - 4));
+      const y = 2 + Math.floor(Math.random() * (rows - 4));
+      const dir = Math.floor(Math.random() * 4);
+      if (room(x, y, 120) < 120) continue;
+      Object.assign(r, { x, y, dir, progress: 0, run: 0, alive: true, trail: [{ x, y, t: simTime }] });
+      laid[idx(x, y)] = simTime;
+      return true;
+    }
+    return false;
+  }
+
+  function crash(r) {
+    r.alive = false;
+    r.respawnAt = simTime + 1400 + Math.random() * 1600;
+    // Burst of light, then the wreck's trail fades out fast
+    const px = (r.x + 0.5) * cell, py = (r.y + 0.5) * cell;
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2, v = 0.04 + Math.random() * 0.12;
+      sparks.push({ x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v, born: simTime, color: r.color });
+    }
+    const fadeFrom = simTime - TRAIL_LIFE + 700;
+    for (const p of r.trail) {
+      p.t = Math.min(p.t, fadeFrom);
+      const k = idx(p.x, p.y);
+      if (laid[k]) laid[k] = Math.min(laid[k], fadeFrom);
+    }
+  }
+
+  // Pick straight, left or right on arriving at a cell
+  function steer(r) {
+    const heads = new Set(riders.filter((o) => o !== r && o.alive).map((o) => idx(o.x + DIRS[o.dir][0], o.y + DIRS[o.dir][1])));
+    const target = r.aggression > Math.random() ? nearestCutoff(r) : null;
+    let best = null, bestScore = -Infinity;
+    for (const turn of [0, -1, 1]) {
+      const dir = (r.dir + turn + 4) % 4;
+      const nx = r.x + DIRS[dir][0], ny = r.y + DIRS[dir][1];
+      if (blocked(nx, ny) || heads.has(idx(nx, ny))) continue;
+      let score = room(nx, ny, 90);
+      if (turn === 0) score += 30;                      // strongly prefer long straights
+      score += Math.random() * 4;
+      if (target) score -= Math.hypot(target[0] - nx, target[1] - ny) * 2;
+      // Stay off the walls (and out from under the top menu) when there's a choice
+      const edge = Math.min(nx, ny - 4, cols - 1 - nx, rows - 1 - ny);
+      if (edge < 3) score -= (3 - edge) * 12;
+      if (score > bestScore) { bestScore = score; best = dir; }
+    }
+    // Occasional unprovoked turn, but only after a decent straight run
+    if (best === r.dir && r.run >= 6 && Math.random() < 0.05) {
+      const turn = Math.random() < 0.5 ? -1 : 1, dir = (r.dir + turn + 4) % 4;
+      if (room(r.x + DIRS[dir][0], r.y + DIRS[dir][1], 90) > 60) best = dir;
+    }
+    return best;
+  }
+
+  // A point just ahead of the closest rival: steering there cuts them off
+  function nearestCutoff(r) {
+    let pick = null, bestD = 18;
+    for (const o of riders) {
+      if (o === r || !o.alive) continue;
+      const d = Math.abs(o.x - r.x) + Math.abs(o.y - r.y);
+      if (d < bestD) { bestD = d; pick = o; }
+    }
+    if (!pick) return null;
+    const lead = 5;
+    return [pick.x + DIRS[pick.dir][0] * lead, pick.y + DIRS[pick.dir][1] * lead];
+  }
+
+  function step(dt) {
+    simTime += dt;
+    for (const r of riders) {
+      if (!r.alive) { if (simTime >= r.respawnAt) spawn(r); continue; }
+      r.progress += (r.speed * dt) / 1000;
+      while (r.alive && r.progress >= 1) {
+        r.progress -= 1;
+        const nx = r.x + DIRS[r.dir][0], ny = r.y + DIRS[r.dir][1];
+        if (blocked(nx, ny)) { crash(r); break; }
+        r.x = nx; r.y = ny;
+        laid[idx(nx, ny)] = simTime;
+        r.trail.push({ x: nx, y: ny, t: simTime });
+        const dir = steer(r);
+        if (dir === null) { crash(r); break; }
+        r.run = dir === r.dir ? r.run + 1 : 0;
+        r.dir = dir;
+      }
+      while (r.trail.length && simTime - r.trail[0].t > TRAIL_LIFE) r.trail.shift();
+    }
+    // Dead riders' trails still need trimming while they wait
+    for (const r of riders) if (!r.alive) while (r.trail.length && simTime - r.trail[0].t > TRAIL_LIFE) r.trail.shift();
+    sparks = sparks.filter((p) => simTime - p.born < 700);
+  }
+
+  function drawGrid() {
+    const key = `${glow}|${w}|${h}|${cell}`;
+    if (key === gridColor) return;
+    gridColor = key;
+    gridLayer.width = w * dpr; gridLayer.height = h * dpr;
+    const g = gridLayer.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    g.strokeStyle = glow; g.lineWidth = 1;
+    g.globalAlpha = 0.07;
+    g.beginPath();
+    for (let x = 0; x <= cols; x++) { g.moveTo(x * cell + 0.5, 0); g.lineTo(x * cell + 0.5, rows * cell); }
+    for (let y = 0; y <= rows; y++) { g.moveTo(0, y * cell + 0.5); g.lineTo(cols * cell, y * cell + 0.5); }
+    g.stroke();
+    // Brighter major lines every 6 cells
+    g.globalAlpha = 0.14;
+    g.beginPath();
+    for (let x = 0; x <= cols; x += 6) { g.moveTo(x * cell + 0.5, 0); g.lineTo(x * cell + 0.5, rows * cell); }
+    for (let y = 0; y <= rows; y += 6) { g.moveTo(0, y * cell + 0.5); g.lineTo(cols * cell, y * cell + 0.5); }
+    g.stroke();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    drawGrid();
+    ctx.drawImage(gridLayer, 0, 0, w, h);
+    riders[0].color = glow; // the lead rider wears the visitor's color
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineCap = "butt"; ctx.lineJoin = "miter";
+    for (const r of riders) {
+      const pts = r.trail;
+      if (!pts.length) continue;
+      const head = r.alive
+        ? [(r.x + DIRS[r.dir][0] * r.progress + 0.5) * cell, (r.y + DIRS[r.dir][1] * r.progress + 0.5) * cell]
+        : null;
+      // Screen points along the trail, ending at the moving head
+      const P = pts.map((p) => [(p.x + 0.5) * cell, (p.y + 0.5) * cell, p.t]);
+      if (head) P.push([head[0], head[1], simTime]);
+      ctx.strokeStyle = r.color;
+      // Two passes: wide soft glow, then the bright wall itself. Short polyline chunks
+      // share one fade level each, so segments never overlap and bead up.
+      const CHUNK = 4;
+      for (const [width, alpha] of [[8, 0.2], [2.4, 1]]) {
+        ctx.lineWidth = width;
+        for (let i = 0; i < P.length - 1; i += CHUNK) {
+          const j = Math.min(i + CHUNK, P.length - 1);
+          const life = 1 - (simTime - P[j][2]) / TRAIL_LIFE;
+          ctx.globalAlpha = alpha * Math.max(0, life) ** 1.5;
+          ctx.beginPath();
+          ctx.moveTo(P[i][0], P[i][1]);
+          for (let k = i + 1; k <= j; k++) ctx.lineTo(P[k][0], P[k][1]);
+          ctx.stroke();
+        }
+      }
+      if (head) {
+        ctx.globalAlpha = 0.35; ctx.fillStyle = r.color;
+        ctx.beginPath(); ctx.arc(head[0], head[1], cell * 0.9, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1; ctx.fillStyle = "#ffffff";
+        ctx.fillRect(head[0] - 2.5, head[1] - 2.5, 5, 5);
+      }
+    }
+    for (const p of sparks) {
+      const age = simTime - p.born;
+      ctx.globalAlpha = 1 - age / 700;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x + p.vx * age - 1.5, p.y + p.vy * age - 1.5, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
 
   function layout() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = canvas.clientWidth;
-    h = canvas.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.max(160, Math.round((w * h) / 2600));
-    stars = Array.from({ length: count }, () => ({
-      x: Math.random() * w,
-      // Denser toward the top, like a real headliner viewed from the seat
-      y: Math.pow(Math.random(), 1.4) * h,
-      r: Math.random() < 0.1 ? 1.6 + Math.random() : 0.6 + Math.random() * 0.9,
-      tinted: Math.random() < 0.35, // these strands take the remote's color
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.8 + Math.random() * 2.2,
+    const small = w < 640;
+    cell = small ? 12 : 14;
+    cols = Math.floor(w / cell); rows = Math.floor(h / cell);
+    laid = new Float64Array(cols * rows);
+    simTime = 1;
+    sparks = [];
+    const others = NEON.filter((c) => c.toLowerCase() !== glow.toLowerCase());
+    riders = Array.from({ length: small ? 6 : 8 }, (_, i) => ({
+      color: i === 0 ? glow : others[(i - 1) % others.length],
+      speed: (small ? 13 : 16) * (0.9 + Math.random() * 0.2),  // cells per second
+      aggression: 0.15 + Math.random() * 0.35,
+      trail: [], alive: false, respawnAt: 0,
     }));
-    shooters = [];
+    riders.forEach(spawn);
+    gridColor = "";
   }
 
-  // Shooting stars, like the "meteor" mode on starlight kits
-  let shooters = [];
-  let nextShot = 1500;
-
-  function spawnShooter(t) {
-    const fromLeft = Math.random() < 0.5;
-    const speed = 0.9 + Math.random() * 0.6; // px per ms
-    const angle = 0.25 + Math.random() * 0.35;
-    shooters.push({
-      x: fromLeft ? Math.random() * w * 0.5 : w * 0.5 + Math.random() * w * 0.5,
-      y: Math.random() * h * 0.45,
-      vx: Math.cos(angle) * speed * (fromLeft ? 1 : -1),
-      vy: Math.sin(angle) * speed,
-      born: t,
-      life: 700 + Math.random() * 500,
-    });
-    nextShot = t + 2500 + Math.random() * 3500;
+  let running = false, last = 0, heroVisible = true;
+  function frame(now) {
+    if (!running) return;
+    const dt = Math.min(50, now - (last || now));
+    last = now;
+    step(dt);
+    draw();
+    requestAnimationFrame(frame);
   }
-
-  function draw(t) {
-    ctx.clearRect(0, 0, w, h);
-    const twinkle = twinkleBox.checked && !reduceMotion;
-    for (const s of stars) {
-      // Cubing the sine gives long dim stretches and quick bright peaks, so each strand visibly flashes
-      const v = twinkle ? Math.pow(0.5 + 0.5 * Math.sin(t / 1000 * s.speed + s.phase), 3) : 0.7;
-      const a = 0.12 + 0.88 * v;
-      const r = s.r * (0.75 + 0.6 * v);
-      ctx.fillStyle = s.tinted ? glow : "#f3eedf";
-      ctx.globalAlpha = a;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
-      ctx.fill();
-      if (v > 0.55) {
-        // Halo at the peak of the flash
-        ctx.globalAlpha = (v - 0.55) * 0.6;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, r * 4, 0, Math.PI * 2);
-        ctx.fill();
-        if (s.r > 1.5) {
-          // Four-point sparkle on the bigger strands
-          const len = r * 7 * v;
-          ctx.globalAlpha = (v - 0.55) * 1.6;
-          ctx.fillRect(s.x - len, s.y - 0.5, len * 2, 1);
-          ctx.fillRect(s.x - 0.5, s.y - len, 1, len * 2);
-        }
-      }
-    }
-
-    if (twinkle) {
-      if (t > nextShot) spawnShooter(t);
-      shooters = shooters.filter((m) => t - m.born < m.life);
-      for (const m of shooters) {
-        const age = (t - m.born) / m.life;
-        const hx = m.x + m.vx * (t - m.born);
-        const hy = m.y + m.vy * (t - m.born);
-        const tail = 140;
-        const grad = ctx.createLinearGradient(hx, hy, hx - m.vx * tail, hy - m.vy * tail);
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.25, glow);
-        grad.addColorStop(1, "transparent");
-        ctx.globalAlpha = Math.sin(age * Math.PI);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx - m.vx * tail, hy - m.vy * tail);
-        ctx.stroke();
-      }
-    }
-    ctx.globalAlpha = 1;
+  function start() {
+    if (running || !motionBox.checked || reduceMotion || !heroVisible) return;
+    running = true; last = 0;
+    requestAnimationFrame(frame);
   }
+  function stop() { running = false; }
 
-  function loop(t) {
-    draw(t);
-    if (twinkleBox.checked && !reduceMotion) requestAnimationFrame(loop);
+  // A still frame for reduced motion, or when the race is switched off before it starts
+  function settle() {
+    for (let i = 0; i < 300; i++) step(16);
+    draw();
   }
 
   layout();
-  if (reduceMotion) twinkleBox.checked = false;
-  requestAnimationFrame(loop);
-  twinkleBox.addEventListener("change", () => requestAnimationFrame(loop));
-  swatches.forEach((s) => s.addEventListener("click", () => requestAnimationFrame(draw)));
+  if (reduceMotion) { motionBox.checked = false; settle(); } else start();
+  motionBox.addEventListener("change", () => (motionBox.checked ? start() : stop()));
+  swatches.forEach((s) => s.addEventListener("click", () => { if (!running) draw(); }));
+  // Only race while the hero is on screen, to save battery
+  new IntersectionObserver(([entry]) => {
+    heroVisible = entry.isIntersecting;
+    heroVisible ? start() : stop();
+  }).observe(canvas);
   let resizeTimer;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { layout(); draw(performance.now()); }, 120);
+    resizeTimer = setTimeout(() => { layout(); if (!running) settle(); }, 150);
   });
 
   // ---------- Gallery ----------
